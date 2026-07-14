@@ -77,14 +77,40 @@ camera / photo / paste
 
 | File | Purpose |
 |---|---|
-| `index.html` | Markup + layout |
+| `index.html` | Markup + layout, CSP, social/OpenGraph tags |
 | `styles.css` | Mobile-first styles, light/dark |
-| `app.js` | Camera/photo/paste decode, live QR rendering, UI |
+| `app.js` | Camera / screen / photo / paste decode, live QR rendering, UI |
 | `convert.js` | Pure UPN→EPC logic (no DOM) — the tested core |
+| `sw.js` | Service worker — offline capability (network-first shell) |
 | `test.js` | Node unit + round-trip tests: `node test.js` |
-| `vendor/jsQR.js` | QR **decoding** (pinned jsQR 1.4.0) |
-| `vendor/qrcode-generator.js` | QR **generation** (pinned qrcode-generator 1.4.4) |
+| `vendor/jsQR.js` | QR **decoding** (vendored) |
+| `vendor/qrcode-generator.js` | QR **generation** (vendored) |
 | `manifest.webmanifest` | PWA / Add-to-Home-Screen |
+| `og.png` | 1200×630 social share image |
+| `og-template.html` | Source for `og.png` (rendered via headless Chrome) |
+
+### Third-party libraries (vendored, pinned)
+
+Both QR libraries are checked into `vendor/` (no runtime CDN, no npm install needed) and pinned to long-stable, years-old releases:
+
+| Library | Version | Published | License |
+|---|---|---|---|
+| [jsQR](https://github.com/cozmo/jsQR) | 1.4.0 | 2021-04-24 | Apache-2.0 |
+| [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) | 1.4.4 | 2019-09-18 | MIT |
+
+To refresh `og.png` after editing `og-template.html`:
+
+```bash
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+  --allow-file-access-from-files --force-device-scale-factor=1 --hide-scrollbars \
+  --window-size=1200,630 --screenshot="$PWD/og.png" "file://$PWD/og-template.html"
+```
+
+### Offline (PWA)
+
+`sw.js` caches the app for offline use. It's **network-first for the HTML shell** (so an online visit always gets the latest version — no stale-cache surprises) and cache-first only for the versioned assets (`app.js?v=…` etc.). Assets are cache-busted with a `?v=` query, so shipping an update is just a version bump. Combined with `manifest.webmanifest`, the app is installable via **Add to Home Screen**.
+
+> Note: this is plain typed-by-hand JavaScript, not TypeScript — deliberately, given the size and zero-build, static-hosting goals.
 
 ## Tests
 

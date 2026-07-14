@@ -509,4 +509,12 @@
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) { if (scanning) stopCamera(); stopScreenCapture(); }
   });
+
+  // Offline capability (progressive enhancement — safe to fail). The worker is
+  // network-first for navigations, so it never serves a stale app shell online.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* offline unavailable — app still works online */ });
+    });
+  }
 })();

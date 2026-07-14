@@ -10,18 +10,37 @@
     locked to same-origin; images allow data:/blob: for the favicon, the QR, and
     locally-picked screenshots. No inline scripts or styles are permitted.
   -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; worker-src 'self'; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';" />
   <meta name="referrer" content="no-referrer" />
   <meta name="color-scheme" content="dark light" />
   <title>UPN → SEPA QR</title>
   <meta name="description" content="Convert a Slovenian UPN payment QR code into a SEPA (EPC/GiroCode) QR that N26, Wise, bunq and other EU banking apps can scan. 100% on-device." />
   <meta name="theme-color" content="#0b0d12" />
+
+  <!-- Open Graph / social share (X, Facebook, LinkedIn, Slack, iMessage…) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="UPN → SEPA QR" />
+  <meta property="og:title" content="UPN → SEPA QR — pay Slovenian bills from N26, Wise & more" />
+  <meta property="og:description" content="Scan a Slovenian UPN payment QR and get a SEPA (EPC/GiroCode) QR your foreign bank app can pay. 100% on-device — nothing is uploaded." />
+  <meta property="og:url" content="https://vasjab.github.io/upn-to-sepa-qr/" />
+  <meta property="og:image" content="https://vasjab.github.io/upn-to-sepa-qr/og.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="UPN → SEPA QR — turn a Slovenian payment QR into a SEPA QR" />
+  <meta property="og:locale" content="en_US" />
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="UPN → SEPA QR — pay Slovenian bills from N26, Wise & more" />
+  <meta name="twitter:description" content="Scan a Slovenian UPN payment QR and get a SEPA (EPC/GiroCode) QR your foreign bank app can pay. 100% on-device." />
+  <meta name="twitter:image" content="https://vasjab.github.io/upn-to-sepa-qr/og.png" />
+  <meta name="twitter:image:alt" content="UPN → SEPA QR converter" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="UPN→SEPA" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%236d5efc'/%3E%3Cg fill='white'%3E%3Crect x='24' y='24' width='16' height='16' rx='3'/%3E%3Crect x='60' y='24' width='16' height='16' rx='3'/%3E%3Crect x='24' y='60' width='16' height='16' rx='3'/%3E%3Crect x='58' y='58' width='8' height='8'/%3E%3Crect x='70' y='58' width='6' height='6'/%3E%3Crect x='58' y='70' width='6' height='6'/%3E%3Crect x='68' y='68' width='8' height='8'/%3E%3C/g%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=8" />
 </head>
 <body>
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -157,7 +176,7 @@
 
   <script src="vendor/jsQR.js"></script>
   <script src="vendor/qrcode-generator.js"></script>
-  <script src="convert.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <script src="convert.js?v=8"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
