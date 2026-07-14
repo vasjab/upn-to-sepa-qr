@@ -402,7 +402,15 @@
     if (isAppleMobile()) return true;
     var uad = navigator.userAgentData;
     if (uad && typeof uad.mobile === 'boolean' && uad.mobile) return true;
-    return /Android|Mobi|Tablet|Silk|Kindle|PlayBook|BB10|webOS|Opera Mini|IEMobile/i.test(navigator.userAgent || '');
+    if (/Android|Mobi|Tablet|Silk|Kindle|PlayBook|BB10|webOS|Opera Mini|IEMobile/i.test(navigator.userAgent || '')) return true;
+    // Final fallback: a touch-primary device with no mouse (phone/tablet), which
+    // catches odd or desktop-mode user-agents that slip past the checks above.
+    try {
+      if (window.matchMedia &&
+          matchMedia('(pointer: coarse)').matches &&
+          !matchMedia('(pointer: fine)').matches) return true;
+    } catch (e) { /* matchMedia unavailable */ }
+    return false;
   }
 
   // ---- actions -------------------------------------------------------------
