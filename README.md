@@ -1,5 +1,7 @@
 # UPN → SEPA QR
 
+**Live:** https://vasjab.github.io/upn-to-sepa-qr/
+
 A tiny, mobile-first web app that scans a **Slovenian UPN payment QR code** (the one printed on _položnice_ / UPN bills that Slovenian bank apps read to pre-fill a payment) and turns it into a **SEPA EPC QR code** (a.k.a. _GiroCode_ / EPC069-12) — the standard that **N26**, **Wise**, **bunq** and most EU banking apps scan to pre-fill a SEPA transfer.
 
 Why it's needed: a Slovenian UPN QR is its **own** format. Foreign fintech apps cannot read it. This app converts UPN → EPC so you can pay a Slovenian bill from a non-Slovenian account.
