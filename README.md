@@ -87,7 +87,7 @@ camera / photo / paste
 ## Tests
 
 ```bash
-node test.js      # 46 assertions: parsing, amount, references, EPC mapping, byte cap, ISO-8859-2
+node test.js      # 50 assertions: parsing, amount, references, EPC mapping, byte cap, ISO-8859-2
 ```
 
 The browser pipeline is also round-trip verified: a UPN QR is encoded, decoded with jsQR, converted, re-rendered as an EPC QR, and decoded again — confirming the output is scannable and carries the correct data.
