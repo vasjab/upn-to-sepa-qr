@@ -279,6 +279,18 @@
   }
 
   // ---- image file decoding -------------------------------------------------
+  // Decode an already-loaded <img> at a given max dimension (downscaled if bigger).
+  function decodeImageAt(img, maxDim) {
+    var iw = img.naturalWidth, ih = img.naturalHeight;
+    if (!iw || !ih) return null;
+    var scale = Math.min(1, maxDim / Math.max(iw, ih));
+    var w = Math.max(1, Math.round(iw * scale)), h = Math.max(1, Math.round(ih * scale));
+    scanCanvas.width = w; scanCanvas.height = h;
+    var ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, w, h);
+    return jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'attemptBoth' });
+  }
+
   function handleFile(file) {
     if (!file) return;
     clearInputError();
@@ -286,16 +298,15 @@
     var img = new Image();
     img.onload = function () {
       URL.revokeObjectURL(url);
-      var w = img.naturalWidth, h = img.naturalHeight;
-      var scale = Math.min(1, 1600 / Math.max(w, h)); // cap size for perf
-      w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
-      scanCanvas.width = w; scanCanvas.height = h;
-      var ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
-      ctx.drawImage(img, 0, 0, w, h);
-      var data = ctx.getImageData(0, 0, w, h);
-      var result = jsQR(data.data, w, h, { inversionAttempts: 'attemptBoth' });
+      // Phone screenshots are large and often have a smallish QR. Try a fast
+      // downscaled pass, then fall back to full resolution so a small code in a
+      // tall screenshot still decodes.
+      var result = decodeImageAt(img, 2000);
+      if (!result && Math.max(img.naturalWidth, img.naturalHeight) > 2000) {
+        result = decodeImageAt(img, Math.max(img.naturalWidth, img.naturalHeight));
+      }
       if (result) { handleDecodedText(decodeQrText(result)); }
-      else { showInputError('No QR code found in that image. Try a sharper, closer photo of just the code.'); }
+      else { showInputError('No QR code found in that image. Make sure the whole QR is visible and not too small.'); }
     };
     img.onerror = function () { URL.revokeObjectURL(url); showInputError('Could not open that image file.'); };
     img.src = url;
@@ -448,7 +459,7 @@
     btnScreen.hidden = false;
     btnScreen.addEventListener('click', startScreenCapture); // self-manages mutual exclusivity
   } else if (isAppleMobile()) {
-    el('paste-hint').textContent = 'On iPhone: screenshot the QR, then tap “Upload image”.';
+    el('paste-hint').textContent = 'QR on your screen? Screenshot it (Side + Volume Up), then tap “Photo / screenshot”.';
   }
 
   el('btn-paste').addEventListener('click', function () {
