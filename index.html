@@ -40,7 +40,7 @@
   <meta name="apple-mobile-web-app-title" content="UPN→SEPA" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%236d5efc'/%3E%3Cg fill='white'%3E%3Crect x='24' y='24' width='16' height='16' rx='3'/%3E%3Crect x='60' y='24' width='16' height='16' rx='3'/%3E%3Crect x='24' y='60' width='16' height='16' rx='3'/%3E%3Crect x='58' y='58' width='8' height='8'/%3E%3Crect x='70' y='58' width='6' height='6'/%3E%3Crect x='58' y='70' width='6' height='6'/%3E%3Crect x='68' y='68' width='8' height='8'/%3E%3C/g%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="styles.css?v=8" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 </head>
 <body>
   <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -77,6 +77,7 @@
             Photo / screenshot
           </button>
         </div>
+        <p class="cap-note hidden" id="screen-note">🖥️ &ldquo;Capture screen&rdquo; works on desktop only.</p>
         <input type="file" id="file-input" accept="image/*" class="hidden" />
         <p class="paste-hint" id="paste-hint">Tip: copy a QR screenshot and paste it with <kbd>⌘V</kbd>.</p>
       </div>
@@ -176,7 +177,7 @@
 
   <script src="vendor/jsQR.js"></script>
   <script src="vendor/qrcode-generator.js"></script>
-  <script src="convert.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="convert.js?v=9"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>

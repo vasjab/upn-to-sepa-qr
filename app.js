@@ -476,6 +476,7 @@
   var btnScreen = el('btn-screen');
   if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && !isMobileDevice()) {
     btnScreen.hidden = false;
+    el('screen-note').classList.remove('hidden'); // "desktop only" caption by the button
     btnScreen.addEventListener('click', startScreenCapture); // self-manages mutual exclusivity
   } else if (isMobileDevice()) {
     el('paste-hint').textContent = 'QR on your screen? Screenshot it, then tap “Photo / screenshot”.';

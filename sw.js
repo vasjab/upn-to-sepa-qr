@@ -12,11 +12,11 @@
  * Bump VERSION on each release to roll the cache; old caches are pruned on activate.
  * skipWaiting + clients.claim make a new worker take over immediately.
  */
-var VERSION = 'v8';
+var VERSION = 'v9';
 var CACHE = 'upn-sepa-' + VERSION;
 var CORE = [
   './', './index.html',
-  './styles.css?v=8', './convert.js?v=8', './app.js?v=8',
+  './styles.css?v=9', './convert.js?v=9', './app.js?v=9',
   './vendor/jsQR.js', './vendor/qrcode-generator.js',
   './manifest.webmanifest', './og.png'
 ];

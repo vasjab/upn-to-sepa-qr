@@ -148,6 +148,7 @@ h1 { font-size: 1.5rem; margin: 0 0 5px; letter-spacing: -0.03em; font-weight: 8
 .stack > * + * { margin-top: 10px; }
 
 .paste-hint { color: var(--faint); font-size: 0.78rem; text-align: center; margin: 12px 2px 2px; }
+.cap-note { color: var(--faint); font-size: 0.78rem; text-align: center; margin: 2px 2px 0; }
 .paste-hint kbd {
   font-family: inherit; font-size: 0.72rem; padding: 1px 6px; border-radius: 6px;
   background: var(--field); border: 1px solid var(--field-border); color: var(--muted);
