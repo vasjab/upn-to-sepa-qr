@@ -318,8 +318,8 @@
 
   function startScreenCapture() {
     clearInputError();
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-      showInputError('Screen capture isn\'t supported in this browser. Use "Upload image" instead.');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || isAppleMobile()) {
+      showInputError('Screen capture isn\'t available on this device. Screenshot the QR, then tap “Upload image”.');
       return;
     }
     stopScreenCapture(); // re-entry: release any prior capture + timer first
@@ -359,11 +359,28 @@
           showInputError('Could not read the screen capture. Please try again.');
         });
       })
-      .catch(function () { /* user cancelled the picker or denied — no error needed */ });
+      .catch(function (err) {
+        var name = err && err.name;
+        // A cancelled/denied picker is expected — say nothing. Anything else
+        // (NotSupported/TypeError on browsers that expose but can't run it) gets
+        // a helpful nudge to the working path.
+        if (name === 'NotAllowedError' || name === 'AbortError') return;
+        showInputError('Screen capture isn\'t available on this device. Screenshot the QR, then tap “Upload image”.');
+      });
   }
 
   function nowMs() {
     return (window.performance && performance.now) ? performance.now() : (+new Date());
+  }
+
+  // iOS/iPadOS Safari (all WebKit browsers on Apple mobile) expose the
+  // getDisplayMedia name but cannot actually capture the screen — WebKit bug
+  // 186294 is still open as of Safari 26. Detect these so we don't offer a
+  // button that can't work. iPadOS reports as "Macintosh" but has touch points.
+  function isAppleMobile() {
+    var ua = navigator.userAgent || '';
+    return /iP(hone|od|ad)/.test(ua) ||
+      (/Macintosh/.test(ua) && typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 1);
   }
 
   // ---- actions -------------------------------------------------------------
@@ -423,11 +440,15 @@
     e.target.value = ''; // allow re-selecting the same file
   });
 
-  // "Capture screen" — only offered where the browser supports it.
+  // "Capture screen" — only offered where it actually works: desktop browsers
+  // and Android Chrome. iOS/iPadOS Safari expose the API but can't capture the
+  // screen, so we hide the button there and point users at screenshot+upload.
   var btnScreen = el('btn-screen');
-  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && !isAppleMobile()) {
     btnScreen.hidden = false;
     btnScreen.addEventListener('click', startScreenCapture); // self-manages mutual exclusivity
+  } else if (isAppleMobile()) {
+    el('paste-hint').textContent = 'On iPhone: screenshot the QR, then tap “Upload image”.';
   }
 
   el('btn-paste').addEventListener('click', function () {
