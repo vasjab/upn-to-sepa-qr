@@ -1,0 +1,12 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Local Claude Code settings (not for the repo)
+.claude/
+
+# Local dev server logs / scratch
+*.log
+/tmp/

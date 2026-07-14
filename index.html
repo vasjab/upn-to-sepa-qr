@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <!--
+    Strict Content-Security-Policy. The important line is `connect-src 'none'` —
+    it blocks fetch / XHR / WebSocket / sendBeacon / EventSource, so this page
+    physically cannot transmit your payment data anywhere. Everything else is
+    locked to same-origin; images allow data:/blob: for the favicon, the QR, and
+    locally-picked screenshots. No inline scripts or styles are permitted.
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none';" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="dark light" />
+  <title>UPN → SEPA QR</title>
+  <meta name="description" content="Convert a Slovenian UPN payment QR code into a SEPA (EPC/GiroCode) QR that N26, Wise, bunq and other EU banking apps can scan. 100% on-device." />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="UPN→SEPA" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%236d5efc'/%3E%3Cg fill='white'%3E%3Crect x='24' y='24' width='16' height='16' rx='3'/%3E%3Crect x='60' y='24' width='16' height='16' rx='3'/%3E%3Crect x='24' y='60' width='16' height='16' rx='3'/%3E%3Crect x='58' y='58' width='8' height='8'/%3E%3Crect x='70' y='58' width='6' height='6'/%3E%3Crect x='58' y='70' width='6' height='6'/%3E%3Crect x='68' y='68' width='8' height='8'/%3E%3C/g%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12h15M13 6l6 6-6 6" />
+        </svg>
+      </div>
+      <h1>UPN&nbsp;→&nbsp;SEPA&nbsp;QR</h1>
+      <p class="sub">Scan a Slovenian bill's QR, get one your foreign bank app can pay.</p>
+      <div class="trust" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        Private · on-device · nothing uploaded
+      </div>
+    </header>
+
+    <!-- INPUT -->
+    <section class="card reveal" id="input-card">
+      <div class="stack" id="input-buttons">
+        <button class="btn btn-primary" id="btn-camera">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Scan with camera
+        </button>
+        <div class="opt-row">
+          <button class="btn btn-glass" id="btn-screen" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Capture screen
+          </button>
+          <button class="btn btn-glass" id="btn-upload">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
+            Upload image
+          </button>
+        </div>
+        <input type="file" id="file-input" accept="image/*" class="hidden" />
+        <p class="paste-hint" id="paste-hint">Tip: copy a QR screenshot and paste it with <kbd>⌘V</kbd>.</p>
+      </div>
+
+      <div class="screen-status hidden" id="screen-status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="screen-status-text">Looking for a QR code on your screen…</span>
+      </div>
+
+      <details class="adv">
+        <summary>or paste the raw UPN QR text</summary>
+        <textarea id="paste-text" placeholder="UPNQR&#10;...&#10;paste decoded QR contents here"></textarea>
+        <button class="btn btn-glass btn-block" id="btn-paste">Convert pasted text</button>
+      </details>
+
+      <!-- Camera view -->
+      <div id="camera" class="hidden">
+        <div class="video-frame">
+          <video id="video" playsinline muted></video>
+          <div class="reticle" aria-hidden="true">
+            <span class="corner tl"></span><span class="corner tr"></span>
+            <span class="corner bl"></span><span class="corner br"></span>
+            <span class="scanline"></span>
+          </div>
+        </div>
+        <div class="cam-actions">
+          <button class="btn btn-glass" id="btn-cam-cancel">Cancel</button>
+          <button class="btn btn-glass hidden" id="btn-torch">Torch</button>
+        </div>
+        <p class="hint" id="cam-hint">Point at the QR code on the bill.</p>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="card hidden" id="result-card">
+      <div class="result-head">
+        <span class="badge-ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        <div>
+          <div class="result-title">Payment ready</div>
+          <div class="result-note">Review, then scan below to pay</div>
+        </div>
+      </div>
+
+      <div id="messages"></div>
+
+      <div class="field">
+        <label for="f-name">Recipient</label>
+        <input type="text" id="f-name" autocomplete="off" />
+      </div>
+      <div class="field mono">
+        <label for="f-iban">IBAN</label>
+        <input type="text" id="f-iban" autocomplete="off" inputmode="text" spellcheck="false" />
+      </div>
+      <div class="field field-amount mono">
+        <label for="f-amount">Amount</label>
+        <span class="cur" aria-hidden="true">€</span>
+        <input type="text" id="f-amount" inputmode="decimal" placeholder="0.00" />
+      </div>
+      <div class="field">
+        <label for="f-ref">Reference / note</label>
+        <input type="text" id="f-ref" autocomplete="off" />
+      </div>
+
+      <div class="qr-wrap">
+        <div class="qr-box" id="qr-box"><canvas id="qr-canvas"></canvas></div>
+        <p class="qr-cta">Open <span class="apps">N26 → Send → Scan QR</span><br>and point it at this code.</p>
+        <div class="opt-row">
+          <button class="btn btn-glass" id="btn-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            Save PNG
+          </button>
+          <button class="btn btn-glass" id="btn-copy">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy details
+          </button>
+        </div>
+        <button class="btn btn-ghost btn-block" id="btn-again">Scan another</button>
+
+        <details class="adv">
+          <summary>show generated SEPA (EPC) data</summary>
+          <div class="epc-raw" id="epc-raw"></div>
+        </details>
+      </div>
+    </section>
+
+    <footer>
+      <p class="lock">🔒 Everything runs on your device. Nothing is uploaded, ever.</p>
+      <p><strong>N26</strong> scans this natively. <strong>Wise</strong>, <strong>bunq</strong> &amp; most EU apps too. <strong>Revolut</strong> support depends on app version/region.</p>
+      <p>Always check the recipient, IBAN &amp; amount in your bank app before you confirm.</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Copied</div>
+
+  <script src="vendor/jsQR.js"></script>
+  <script src="vendor/qrcode-generator.js"></script>
+  <script src="convert.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
