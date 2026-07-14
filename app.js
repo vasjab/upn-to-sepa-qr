@@ -329,8 +329,8 @@
 
   function startScreenCapture() {
     clearInputError();
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || isAppleMobile()) {
-      showInputError('Screen capture isn\'t available on this device. Screenshot the QR, then tap “Upload image”.');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || isMobileDevice()) {
+      showInputError('Screen capture isn\'t available on phones. Screenshot the QR, then tap “Photo / screenshot”.');
       return;
     }
     stopScreenCapture(); // re-entry: release any prior capture + timer first
@@ -394,6 +394,17 @@
       (/Macintosh/.test(ua) && typeof navigator.maxTouchPoints === 'number' && navigator.maxTouchPoints > 1);
   }
 
+  // Screen capture (getDisplayMedia) is DESKTOP-ONLY on the web: no mobile
+  // browser supports it — not Chrome/Samsung/Firefox on Android, nor iOS Safari
+  // (caniuse: mdn-api_mediadevices_getdisplaymedia). So we treat any phone/tablet
+  // as unable to screen-capture and steer those users to screenshot + upload.
+  function isMobileDevice() {
+    if (isAppleMobile()) return true;
+    var uad = navigator.userAgentData;
+    if (uad && typeof uad.mobile === 'boolean' && uad.mobile) return true;
+    return /Android|Mobi|Tablet|Silk|Kindle|PlayBook|BB10|webOS|Opera Mini|IEMobile/i.test(navigator.userAgent || '');
+  }
+
   // ---- actions -------------------------------------------------------------
   function downloadPng() {
     try {
@@ -455,11 +466,11 @@
   // and Android Chrome. iOS/iPadOS Safari expose the API but can't capture the
   // screen, so we hide the button there and point users at screenshot+upload.
   var btnScreen = el('btn-screen');
-  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && !isAppleMobile()) {
+  if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && !isMobileDevice()) {
     btnScreen.hidden = false;
     btnScreen.addEventListener('click', startScreenCapture); // self-manages mutual exclusivity
-  } else if (isAppleMobile()) {
-    el('paste-hint').textContent = 'QR on your screen? Screenshot it (Side + Volume Up), then tap “Photo / screenshot”.';
+  } else if (isMobileDevice()) {
+    el('paste-hint').textContent = 'QR on your screen? Screenshot it, then tap “Photo / screenshot”.';
   }
 
   el('btn-paste').addEventListener('click', function () {
