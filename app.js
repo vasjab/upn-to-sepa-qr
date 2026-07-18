@@ -423,6 +423,33 @@
     } catch (e) { showToast('Could not save image'); }
   }
 
+  // Web Share (option for phones): hand the EPC QR PNG to another device via the
+  // OS share sheet (AirDrop, email, messenger…) so a banking app can scan it off
+  // a bigger screen. The share target is user-picked OS UI — the page itself
+  // still makes no network requests, so the CSP/no-egress guarantee holds.
+  function shareQr() {
+    qrCanvas.toBlob(function (blob) {
+      if (!blob) { showToast('Could not share'); return; }
+      var file = new File([blob], 'sepa-payment-qr.png', { type: 'image/png' });
+      navigator.share({ files: [file], title: 'SEPA payment QR' }).catch(function (err) {
+        if (err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return; // user closed the sheet
+        showToast('Could not share');
+      });
+    }, 'image/png');
+  }
+
+  // True only where the Web Share API can share a PNG file (feature-detected —
+  // desktop browsers and older mobiles either lack share() or can't share files).
+  function canShareQrPng() {
+    try {
+      if (!navigator.share || !navigator.canShare) return false;
+      var probe = new File([''], 'probe.png', { type: 'image/png' });
+      return navigator.canShare({ files: [probe] });
+    } catch (e) {
+      return false; // File constructor or canShare unsupported
+    }
+  }
+
   function copyDetails() {
     var cents = eurosToCents(fAmount.value);
     var lines = [
@@ -480,6 +507,19 @@
     btnScreen.addEventListener('click', startScreenCapture); // self-manages mutual exclusivity
   } else if (isMobileDevice()) {
     el('paste-hint').textContent = 'QR on your screen? Screenshot it, then tap “Photo / screenshot”.';
+  }
+
+  // On desktop, surface that "Scan with camera" means the webcam — holding a
+  // paper bill up to a laptop camera is the fastest paper → monitor flow.
+  if (!isMobileDevice()) {
+    el('webcam-note').classList.remove('hidden');
+  }
+
+  // "Share" on the result — only where the OS can actually share a PNG file.
+  if (canShareQrPng()) {
+    el('btn-share').classList.remove('hidden');
+    el('share-note').classList.remove('hidden');
+    el('btn-share').addEventListener('click', shareQr);
   }
 
   el('btn-paste').addEventListener('click', function () {

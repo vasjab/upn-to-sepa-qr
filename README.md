@@ -8,6 +8,8 @@ Why it's needed: a Slovenian UPN QR is its **own** format. Foreign fintech apps 
 
 - **100% client-side.** Your payment data never leaves the device — no server, no tracking, no build step.
 - Four ways to input a code: **scan with camera**, **capture screen**, **upload an image**, or **paste a screenshot** (⌘V / Ctrl V) — plus a raw-text fallback.
+- **Works on laptops too:** "Scan with camera" uses the webcam — hold the paper bill up to it and the SEPA QR shows on your monitor, ready to scan with the banking app on your phone.
+- **Share** (phones): sends the generated QR as a PNG through the OS share sheet (AirDrop, email, any messenger) so you can show it on a bigger screen — handy when the bill was scanned with the same phone your banking app is on.
 - Handles Slovenian characters (č/š/ž) correctly (UPN QR is ISO-8859-2).
 - Editable fields — fix the amount on open-amount bills, tweak the reference — the QR updates live.
 - IBAN checksum + basic validation, with plain-language warnings.
@@ -20,6 +22,7 @@ This app is designed so payment data physically cannot leave your device:
 - **On-device processing.** Camera / screen-capture / image frames are decoded in-page with `jsQR`; the SEPA QR is generated in-page with `qrcode-generator`. Nothing is uploaded.
 - **No inline code.** `script-src 'self'` and `style-src 'self'` (no `unsafe-inline`) shrink the XSS surface; all user-derived text is HTML-escaped before display.
 - **Streams released immediately.** Camera and screen-capture `MediaStream`s are stopped the instant a code is found, the view is cancelled, or the tab is hidden — the camera/recording indicator never lingers.
+- **Share is OS-mediated.** The **Share** button hands the QR PNG to the system share sheet (Web Share API) — you pick the target, and the page itself still makes no network requests.
 
 For an even stronger guarantee when self-hosting, add these response headers (CSP `frame-ancestors` and friends can't be set from a `<meta>` tag):
 `Content-Security-Policy: frame-ancestors 'none'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy: geolocation=(), microphone=()`.
